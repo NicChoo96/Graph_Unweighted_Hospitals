@@ -10,10 +10,22 @@ def read_data_json_file(output_directory, file_name):
 
 graph_data = read_data_json_file("output/", "smallPP.json")
 
-correctCount = 0
 
-for path in graph_data["paths"]:
-    if str(graph_data["paths"][path][-1]) in graph_data["hospitals"]:
-        correctCount += 1
+def test_end_node_correctness():
+    correctCount = 0
 
-print("Graph Correctness for end node: " + str(correctCount/len(graph_data["paths"])*100) + "%")
+    for path in graph_data["paths"]:
+        if str(graph_data["paths"][path][-1]) in graph_data["hospitals"]:
+            correctCount += 1
+
+    print("Graph Correctness for end node: " + str(correctCount/len(graph_data["paths"])*100) + "%")
+
+def test_graph_completion():
+    totalNodes = 0
+    for path in graph_data["paths"]:
+        totalNodes += 1
+    print("Total Nodes path found: " + str(totalNodes))
+    print("Total Nodes in graph: 1965206")
+    print("Completion Percentage: " + str(totalNodes/1965206*100) + "%")
+
+test_graph_completion()

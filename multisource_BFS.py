@@ -2,6 +2,7 @@ import graph_preprocessing as gp
 import time
 import random
 import json
+import math
 import os
 
 # graph = {
@@ -72,28 +73,6 @@ def backtrack_shortest(parent, startNode, end):
     return path
 
 
-
-def BFS_Selected(startNode, hospitalNode):
-    visitedNode = {}
-    queue = []
-    parent = {}
-    queue.append(startNode)
-    visitedNode[startNode] = True
-    while queue:
-        currentNode = queue.pop(0)
-        if currentNode == hospitalNode:
-            return backtrack_shortest(parent, startNode, currentNode)
-
-        for i in range(len(graph[currentNode])):
-            if graph[currentNode][i] not in visitedNode:
-                if graph[currentNode][i] in allPaths:
-                    return allPaths[graph[currentNode][i]]
-                parent[graph[currentNode][i]] = currentNode
-                queue.append(graph[currentNode][i])
-                visitedNode[graph[currentNode][i]] = True
-
-
-
 def BFS_Shortest(startNode):
     visitedNode = {}
     queue = []
@@ -111,6 +90,34 @@ def BFS_Shortest(startNode):
                 queue.append(graph[currentNode][i])
                 visitedNode[graph[currentNode][i]] = True
 
+bfsList = {}
+# bfsList[BFS_index].append(path)
+seen = {}
+# seen[currentNode].append(BFS_index)
+visitedBFS_nodes = {}
+# visitedBFS_nodes[currentNode].append(BFS_index)
+
+def multisource_BFS(startNode):
+    visitedNode = {}
+    queue = []
+    parent = {}
+    queue.append(startNode)
+    visitedNode[startNode] = True
+    while queue:
+        currentNode = queue.pop(0)
+        if currentNode in hospital:
+            return backtrack_shortest(parent, startNode, currentNode)
+
+        for i in range(len(graph[currentNode])):
+            if graph[currentNode][i] not in visitedNode:
+                parent[graph[currentNode][i]] = currentNode
+                queue.append(graph[currentNode][i])
+                visitedNode[graph[currentNode][i]] = True
+
+
+def backtrack():
+    print("backtracking...")
+
 
 def analyseGraphEdges():
     edgeCounts = {}
@@ -118,6 +125,7 @@ def analyseGraphEdges():
         edgeCounts[key] = len(graph[key])
 
     write_data_json_file("output/", "edgesCount.json", edgeCounts)
+
 
 def shortest_hospital_process():
     topEdges = 4
@@ -138,6 +146,6 @@ def shortest_hospital_process():
 load_graph_data()
 shortest_hospital_process()
 
-write_data_json_file("output/", "normalBFS.json", {"hospitals": hospital, "paths": allPaths})
+write_data_json_file("output/", "multisource_BFS.json", {"hospitals": hospital, "paths": allPaths})
 print("Nodes Number:" + str(len(graph)))
 print("Run Finished: " + str(time.time() - start))
