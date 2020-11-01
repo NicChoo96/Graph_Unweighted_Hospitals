@@ -10,6 +10,8 @@ numGraphPerThread = 1
 graph = {}
 hospital = []
 topK = 1
+nodes = {}
+isRecordPath = 0
 
 class BFS_threads(threading.Thread):
     def __init__(self, threadID, name, nodeList):
@@ -23,6 +25,15 @@ class BFS_threads(threading.Thread):
             # print("T"+str(self.threadID) + ":" + str(round(len(allPaths)/numOfThreads/numGraphPerThread*100, 6)) + "%")
             print("T" + str(self.threadID) + ":" + str(len(allPaths)))
 
+def store_node_data(n, hospitalID, layerDist):
+    if n not in hospital:
+        if n in nodes:
+            nodes[n].append({"h": hospitalID, "d": layerDist})
+        # Add Hospital Distance to Node
+        else:
+            nodes[n] = []
+            nodes[n].append({"h": hospitalID, "d": layerDist})
+
 
 def backtrack(parent, startNode, end):
     path = [end]
@@ -32,6 +43,16 @@ def backtrack(parent, startNode, end):
     path.reverse()
     if startNode not in hospital:
         allPaths[startNode].append(path)
+
+def backtrack_dist(parent, startNode, end):
+    path = [end]
+    while path[-1] != startNode:
+        currentNode = parent[path[-1]]
+        path.append(currentNode)
+
+    if startNode not in nodes:
+        nodes[startNode] = []
+    nodes[startNode].append({"h": end, "dist": len(path)})
 
 def BFS_thread_process(startNode):
     if startNode in hospital:
@@ -46,8 +67,11 @@ def BFS_thread_process(startNode):
     hospitalCount = 0
     while queue:
         currentNode = queue.pop(0)
-        if currentNode in hospital:
-            backtrack(parent, startNode, currentNode)
+        if currentNode in hospital and startNode not in hospital:
+            if isRecordPath:
+                backtrack(parent, startNode, currentNode)
+            else:
+                backtrack_dist(parent, startNode, currentNode)
             hospitalCount += 1
             if hospitalCount == topK:
                 return
@@ -79,7 +103,7 @@ def multiThreading_BFS():
     for i in range(len(threadsNodes)):
         threads[i].join()
 
-def run(graphData, hospitalData, k, outputFile):
+def run(graphData, hospitalData, k, outputFile, isRecord):
     global graph
     global hospital
     global topK
@@ -87,6 +111,11 @@ def run(graphData, hospitalData, k, outputFile):
     global visitedNodePath
     global numOfThreads
     global numGraphPerThread
+    global isRecordPath
+    global nodes
+
+    nodes = {}
+    isRecordPath = isRecord
     allPaths = {}
     visitedNodePath = {}
     numOfThreads = 8
@@ -99,6 +128,8 @@ def run(graphData, hospitalData, k, outputFile):
     numGraphPerThread = nodesWithoutHospital/numOfThreads
     multiThreading_BFS()
     print("Top " + str(topK) + " hospitals")
-
-    utils.write_data_json_file("output/", outputFile, {"hospitals": hospital, "paths": allPaths})
+    if isRecordPath:
+        utils.write_data_json_file("output/", outputFile, {"algoMethod": "Multi_Thread BFS", "hospitals": hospital, "paths": allPaths})
+    else:
+        utils.write_data_json_file("output/", outputFile, {"algoMethod": "Multi_Thread BFS", "hospitals": hospital, "nodes": nodes})
     return "Nodes Number:" + str(len(graph)) + "\n" + "Number of Threads:  " + str(numOfThreads) + "\n" + "Run Finished: " + str(time.time() - start)

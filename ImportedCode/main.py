@@ -145,6 +145,6 @@ for key in graph:
     if key not in allPaths and key not in hospital:
             BFS_ShortestCuda(key)
 
-write_data_json_file("output/", "smallPP.json", {"hospitals": hospital, "paths": allPaths})
+write_data_json_file("output/", "AppendingBFS_output.json", {"hospitals": hospital, "paths": allPaths})
 print("Nodes Number:" + str(len(graph)))
 print("Run Finished: " + str(time.time() - start))

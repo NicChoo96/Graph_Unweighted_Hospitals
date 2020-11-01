@@ -69,5 +69,5 @@ def run(graph, hospital, outputFile):
         if key not in allPaths and key not in hospital:
             BFS(key, graph, hospital)
 
-    utils.write_data_json_file("output/", outputFile, {"hospitals": hospital, "paths": allPaths})
+    utils.write_data_json_file("output/", outputFile, {"AlgoMethod":"Appending BFS", "hospitals": hospital, "paths": allPaths})
     return "File Write Completed"+"\n"+"Nodes Number:" + str(len(graph)) + "\n" + "Run Finished: " + str(time.time() - start)

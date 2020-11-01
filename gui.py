@@ -40,6 +40,7 @@ def main_gui():
 
     int_var = tk.IntVar()
     algoSelector_var = tk.IntVar()
+    recordPath_var = tk.IntVar()
     graphText = tk.StringVar()
     hospitalText = tk.StringVar()
     graphData = tk.StringVar()
@@ -91,7 +92,7 @@ def main_gui():
     tk.Label(fileFrame, text = ".json").grid(row=7,column=2)
 
     traverseButton = tk.Button(fileFrame, text = "Traverse", command=lambda:
-    main_algo(algoSelector_var.get(),int_var.get(),graphData.get(),hospitalData.get(),numOfHospital.get(),k.get(),savefilename.get(), root, text))
+    main_algo(algoSelector_var.get(),int_var.get(),graphData.get(),hospitalData.get(),numOfHospital.get(),k.get(),savefilename.get(), root, text, recordPath_var))
 
     traverseButton.grid(row=8,column=1)
 
@@ -101,17 +102,22 @@ def main_gui():
     yesSelect = tk.Radiobutton(radioFrame, text = "Yes", variable = int_var, value = 1).grid(row=2, column=1)
     noSelect = tk.Radiobutton(radioFrame, text = "No", variable = int_var, value = 0).grid(row=2, column=2)
 
+    recordPath_var.set(1)
+    tk.Label(radioFrame, text="Record").grid(row=3, column=0)
+    pathSelector = tk.Radiobutton(radioFrame, text="Path", variable=recordPath_var, value=1).grid(row=3, column=1)
+    distSelector = tk.Radiobutton(radioFrame, text="Dist", variable=recordPath_var, value=0).grid(row=3, column=2)
+
     # Radio Frame GUI
     algoSelector_var.set(1)
-    tk.Label(radioFrame, text="Algorithm Selector").grid(row=3, column=0)
-    yesSelect = tk.Radiobutton(radioFrame, text="Appending BFS", variable=algoSelector_var, value=1).grid(row=3, column=1)
-    noSelect = tk.Radiobutton(radioFrame, text="Multi Threading BFS", variable=algoSelector_var, value=0).grid(row=3, column=2)
+    tk.Label(radioFrame, text="Algorithm Selector").grid(row=4, column=0)
+    algoSelectAppending = tk.Radiobutton(radioFrame, text="Appending BFS", variable=algoSelector_var, value=1).grid(row=4, column=1)
+    algoSelectMultithread = tk.Radiobutton(radioFrame, text="Multi Threading BFS", variable=algoSelector_var, value=0).grid(row=4, column=2)
 
     logsLabel.pack()
     ##############################################################################################
     root.mainloop()
 
-def main_algo(algoSelector, isRandom, graphFile, hospitalFile, num_hospitals, k, saveFile, root, logs_ui):
+def main_algo(algoSelector, isRandom, graphFile, hospitalFile, num_hospitals, k, saveFile, root, logs_ui, isRecordPath):
     #this is how the main algo shd run (pseudocode)\
     if saveFile == "":
         printLogs(logs_ui, root, "Please enter a save file name")
@@ -146,7 +152,7 @@ def main_algo(algoSelector, isRandom, graphFile, hospitalFile, num_hospitals, k,
             printLogs(logs_ui, root, "File saved to " + saveFile+".json")
         else:
             printLogs(logs_ui, root,"Running Multi Threading BFS...")
-            printLogs(logs_ui, root, multi_threading_BFS.run(graph, hosp, k, saveFile+".json"))
+            printLogs(logs_ui, root, multi_threading_BFS.run(graph, hosp, k, saveFile+".json", isRecordPath))
             printLogs(logs_ui, root, "File saved to " + saveFile+".json")
     else:
     #   check if graphFile and hospitalFile input is valid
@@ -156,8 +162,14 @@ def main_algo(algoSelector, isRandom, graphFile, hospitalFile, num_hospitals, k,
             return
         printLogs(logs_ui, root, "Running Algorithm From Imported Files...")
         graph = processing.readGraph(graphFile)
+        if not graph:
+            printLogs(logs_ui, root, "File Error: Wong Graph file input")
+            return
         print("graph done")
         hosp = processing.readHospital(hospitalFile)
+        if not hosp:
+            printLogs(logs_ui, root, "File Error: Wong Hospital file input")
+            return
         if len(hosp) > len(graph):
             printLogs(logs_ui, root, "Error 9001: You have more hospitals than graph nodes")
             return
@@ -173,7 +185,7 @@ def main_algo(algoSelector, isRandom, graphFile, hospitalFile, num_hospitals, k,
             printLogs(logs_ui, root, "File saved to " + saveFile+".json")
         else:
             printLogs(logs_ui, root,"Running Multi Threading BFS...")
-            printLogs(logs_ui, root, multi_threading_BFS.run(graph, hosp, k, saveFile+".json"))
+            printLogs(logs_ui, root, multi_threading_BFS.run(graph, hosp, k, saveFile+".json", isRecordPath))
             printLogs(logs_ui, root, "File saved to " + saveFile+".json")
     #check if k and saveFile input is valid
     #call the algorithm function using all the parameters (graph, hospital, k, savefile) - note that graph, hospital refers to the data structures read from the textfiles

@@ -1,7 +1,7 @@
 import os
 import randomgraphout
 import random
-
+import sys
 
 # takes in a textfile name as input, and returns a dictionary of node keys as output
 # each node key has a value: the value is a list of adjacent nodes i.e. the nodes that can be reached from the node key
@@ -22,18 +22,20 @@ def readGraph(graphInfo):
             continue
 
         linelist = line.split('\t')
+        try:
+            if int(linelist[0]) in graph:
+                if int(linelist[1]) not in graph[int(linelist[0])]:
+                    graph[int(linelist[0])].append(int(linelist[1]))
+            else:
+                graph[int(linelist[0])] = [int(linelist[1])]
 
-        if int(linelist[0]) in graph:
-            if int(linelist[1]) not in graph[int(linelist[0])]:
-                graph[int(linelist[0])].append(int(linelist[1]))
-        else:
-            graph[int(linelist[0])] = [int(linelist[1])]
-
-        if int(linelist[1]) in graph:
-            if int(linelist[0]) not in graph[int(linelist[1])]:
-                graph[int(linelist[1])].append(int(linelist[0]))
-        else:
-            graph[int(linelist[1])] = [int(linelist[0])]
+            if int(linelist[1]) in graph:
+                if int(linelist[0]) not in graph[int(linelist[1])]:
+                    graph[int(linelist[1])].append(int(linelist[0]))
+            else:
+                graph[int(linelist[1])] = [int(linelist[0])]
+        except:
+            return False
 
     return graph
 
@@ -46,7 +48,10 @@ def readHospital(hospitalInfo):
     content = hospitalFile.read()
     content_list = content.decode().split('\n')
     hospitalFile.close()
-    k_hospital = int(content_list[0][2:])
+    try:
+        k_hospital = int(content_list[0][2:])
+    except:
+        return False
     hospital = []
     for line in range(k_hospital):
         hospital.append(int(content_list[line + 1]))
