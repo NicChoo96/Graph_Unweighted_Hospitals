@@ -26,13 +26,13 @@ GENERATOR_MENU = {
     15: gexf_maker}
 
 
-def run():
+def run(fileName = "randomgraph", numVertices = 200, minEdge = 0, maxEdge = 30):
     """
     Run proper converter.
 
     :return: None
     """
-    input_dict = get_input()
+    input_dict = get_input(fileName, numVertices, minEdge, maxEdge)
     first_time = time.perf_counter()
     file_name = input_dict["file_name"]
     min_weight = input_dict["min_weight"]

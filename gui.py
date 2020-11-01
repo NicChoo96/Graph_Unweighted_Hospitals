@@ -77,24 +77,29 @@ def main_gui():
                                     command=lambda: openFile(hospitalText, hospitalData))
     hospitalFileOpenButton.grid(row=1, column=2)
 
+    numOfNodes = tk.IntVar()
+    numOfNodes.set(200)
+    tk.Label(fileFrame, text="Number of Nodes for Random").grid(row=5)
+    numbOfHospitalEntry = tk.Entry(fileFrame, textvariable=numOfNodes).grid(row=5, column=1)
+
     numOfHospital = tk.IntVar()
     numOfHospital.set(20)
-    tk.Label(fileFrame, text="Number of Hospitals for Random").grid(row=5)
-    numbOfHospitalEntry = tk.Entry(fileFrame, textvariable=numOfHospital).grid(row=5, column=1)
+    tk.Label(fileFrame, text="Number of Hospitals for Random").grid(row=6)
+    numbOfHospitalEntry = tk.Entry(fileFrame, textvariable=numOfHospital).grid(row=6, column=1)
 
     k = tk.IntVar()
     k.set(1)
-    tk.Label(fileFrame, text = "Top K Hospitals").grid(row=6)
-    kHospitalEntry = tk.Entry(fileFrame, textvariable = k).grid(row=6, column=1)
+    tk.Label(fileFrame, text = "Top K Hospitals").grid(row=7)
+    kHospitalEntry = tk.Entry(fileFrame, textvariable = k).grid(row=7, column=1)
 
-    tk.Label(fileFrame, text = "Save file name").grid(row=7)
-    saveEntry = tk.Entry(fileFrame, textvariable = savefilename).grid(row=7, column=1)
-    tk.Label(fileFrame, text = ".json").grid(row=7,column=2)
+    tk.Label(fileFrame, text = "Save file name").grid(row=8)
+    saveEntry = tk.Entry(fileFrame, textvariable = savefilename).grid(row=8, column=1)
+    tk.Label(fileFrame, text = ".json").grid(row=8,column=2)
 
     traverseButton = tk.Button(fileFrame, text = "Traverse", command=lambda:
-    main_algo(algoSelector_var.get(),int_var.get(),graphData.get(),hospitalData.get(),numOfHospital.get(),k.get(),savefilename.get(), root, text, recordPath_var))
+    main_algo(algoSelector_var.get(),int_var.get(),graphData.get(),hospitalData.get(),numOfNodes.get(),numOfHospital.get(),k.get(),savefilename.get(), root, text, recordPath_var))
 
-    traverseButton.grid(row=8,column=1)
+    traverseButton.grid(row=9,column=1)
 
     # Radio Frame GUI
     int_var.set(1)
@@ -103,7 +108,7 @@ def main_gui():
     noSelect = tk.Radiobutton(radioFrame, text = "No", variable = int_var, value = 0).grid(row=2, column=2)
 
     recordPath_var.set(1)
-    tk.Label(radioFrame, text="Record").grid(row=3, column=0)
+    tk.Label(radioFrame, text="Record (For Multi_threading BFS)").grid(row=3, column=0)
     pathSelector = tk.Radiobutton(radioFrame, text="Path", variable=recordPath_var, value=1).grid(row=3, column=1)
     distSelector = tk.Radiobutton(radioFrame, text="Dist", variable=recordPath_var, value=0).grid(row=3, column=2)
 
@@ -117,7 +122,7 @@ def main_gui():
     ##############################################################################################
     root.mainloop()
 
-def main_algo(algoSelector, isRandom, graphFile, hospitalFile, num_hospitals, k, saveFile, root, logs_ui, isRecordPath):
+def main_algo(algoSelector, isRandom, graphFile, hospitalFile, num_nodes, num_hospitals, k, saveFile, root, logs_ui, isRecordPath):
     #this is how the main algo shd run (pseudocode)\
     if saveFile == "":
         printLogs(logs_ui, root, "Please enter a save file name")
@@ -125,19 +130,25 @@ def main_algo(algoSelector, isRandom, graphFile, hospitalFile, num_hospitals, k,
     if k > num_hospitals:
         printLogs(logs_ui, root, "Error 69: Top K is more than number of hospitals in graph!")
         return
+    if k == 0:
+        printLogs(logs_ui, root, "Error 69420: Top K cannot be 0")
+        return
     #num of hosp set as 20
     if isRandom:
         if num_hospitals == 0:
             printLogs(logs_ui, root, "Error 000: Enter a number of hospitals more than 0")
             return
+        if num_nodes == 0:
+            printLogs(logs_ui, root, "Error 000: Enter a number of nodes more than 0")
+            return
         print("random ran")
-        graph = processing.generateRandomGraph()
+        graph = processing.generateRandomGraph(numVertices=num_nodes)
         print("graph done")
         hosp = processing.generateRandomHospital(graph,num_hospitals)
         if len(hosp) > len(graph):
             printLogs(logs_ui, root, "Error 9001: You have more hospitals than graph nodes")
             return
-        # print(hosp)
+        printLogs(logs_ui, root, "Running Algorithm...\nNumber of Nodes: " + str(num_nodes) + "\nNumber of Hospitals: " + str(num_hospitals))
         print("hosp done")
     #   generate random graph for both graph and hospital
     #   read random graph into data structure

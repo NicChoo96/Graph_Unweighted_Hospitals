@@ -135,7 +135,7 @@ def logger(vertices_number, edge_number, file_name, elapsed_time):
     :return:  None
     """
     try:
-        with open("ImportedCode/logfile.log", "a") as file:
+        with open("logfile.log", "a") as file:
             file.write(str(datetime.datetime.now()) + "\n")
             file.write("Filename : " + file_name + "\n")
             file.write("Vertices : " + str(vertices_number) + "\n")
@@ -210,7 +210,7 @@ def input_filter(input_dict):
     return filtered_dict
 
 
-def get_input(input_func=input):
+def get_input(fileName, numVertices, minEdge, maxEdge):
     """
     Get input from user and return as dictionary.
 
@@ -219,12 +219,12 @@ def get_input(input_func=input):
     :return: inputs as dict
     """
     result_dict = {
-        "file_name": "randomgraph",
-        "vertices": 200,
+        "file_name": fileName,
+        "vertices": numVertices,
         "max_weight": 1,
         "min_weight": 1,
-        "min_edge": 0,
-        "max_edge": 40,
+        "min_edge": minEdge,
+        "max_edge": maxEdge,
         "sign": 2,
         "output_format": 10,
         "weight": 2,
