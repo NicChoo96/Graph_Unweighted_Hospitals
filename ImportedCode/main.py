@@ -2,8 +2,8 @@ import graph_preprocessing as gp
 import time
 import random
 import json
-import math
 import os
+from numba import jit, cuda
 
 # graph = {
 #     1: [8, 3, 7],
@@ -25,22 +25,17 @@ node = [5]
 allPaths = {}
 visitedNodePath = {}
 number_hospitals = 250
-nodesWithoutHospital = 0
 
-
-def load_graph_data():
-    global nodesWithoutHospital
-    for h in range(number_hospitals):
+for h in range(number_hospitals):
+    numb = random.randint(0, len(graph) - 1)
+    while (numb in hospital and numb not in graph):
         numb = random.randint(0, len(graph) - 1)
-        while (numb in hospital and numb not in graph):
-            numb = random.randint(0, len(graph) - 1)
-        hospital[numb] = 1
-    print("List of Hospital:")
-    print(hospital)
+    hospital[numb] = 1
+print("List of Hospital:")
+print(hospital)
 
-    print("Done Reading Graphs: " + str(time.time() - start))
-    nodesWithoutHospital = len(graph) - number_hospitals
-
+print("Done Reading Graphs: " + str(time.time() - start))
+nodesWithoutHospital = len(graph) - number_hospitals
 
 
 def write_data_json_file(output_directory, file_name, writePath):
@@ -56,7 +51,7 @@ def write_data_json_file(output_directory, file_name, writePath):
         json.dump(data, outfile)
 
 
-def backtrack_shortest(parent, startNode, end):
+def backtrack(parent, startNode, end):
     path = [end]
     while path[-1] != startNode:
         currentNode = parent[path[-1]]
@@ -73,6 +68,26 @@ def backtrack_shortest(parent, startNode, end):
     return path
 
 
+def BFS_Selected(startNode, hospitalNode):
+    visitedNode = {}
+    queue = []
+    parent = {}
+    queue.append(startNode)
+    visitedNode[startNode] = True
+    while queue:
+        currentNode = queue.pop(0)
+        if currentNode == hospitalNode:
+            return backtrack(parent, startNode, currentNode)
+
+        for i in range(len(graph[currentNode])):
+            if graph[currentNode][i] not in visitedNode:
+                if graph[currentNode][i] in allPaths:
+                    return allPaths[graph[currentNode][i]]
+                parent[graph[currentNode][i]] = currentNode
+                queue.append(graph[currentNode][i])
+                visitedNode[graph[currentNode][i]] = True
+
+
 def BFS_Shortest(startNode):
     visitedNode = {}
     queue = []
@@ -82,7 +97,7 @@ def BFS_Shortest(startNode):
     while queue:
         currentNode = queue.pop(0)
         if currentNode in hospital:
-            return backtrack_shortest(parent, startNode, currentNode)
+            return backtrack(parent, startNode, currentNode)
 
         for i in range(len(graph[currentNode])):
             if graph[currentNode][i] not in visitedNode:
@@ -90,14 +105,8 @@ def BFS_Shortest(startNode):
                 queue.append(graph[currentNode][i])
                 visitedNode[graph[currentNode][i]] = True
 
-bfsList = {}
-# bfsList[BFS_index].append(path)
-seen = {}
-# seen[currentNode].append(BFS_index)
-visitedBFS_nodes = {}
-# visitedBFS_nodes[currentNode].append(BFS_index)
-
-def multisource_BFS(startNode):
+# @jit
+def BFS_ShortestCuda(startNode):
     visitedNode = {}
     queue = []
     parent = {}
@@ -106,17 +115,13 @@ def multisource_BFS(startNode):
     while queue:
         currentNode = queue.pop(0)
         if currentNode in hospital:
-            return backtrack_shortest(parent, startNode, currentNode)
+            return backtrack(parent, startNode, currentNode)
 
         for i in range(len(graph[currentNode])):
             if graph[currentNode][i] not in visitedNode:
                 parent[graph[currentNode][i]] = currentNode
                 queue.append(graph[currentNode][i])
                 visitedNode[graph[currentNode][i]] = True
-
-
-def backtrack():
-    print("backtracking...")
 
 
 def analyseGraphEdges():
@@ -126,26 +131,20 @@ def analyseGraphEdges():
 
     write_data_json_file("output/", "edgesCount.json", edgeCounts)
 
+topEdges = 4
+highKeys = []
+for key in graph:
+    if len(graph[key]) >= topEdges and key not in hospital:
+        highKeys.append(key)
 
-def shortest_hospital_process():
-    topEdges = 4
-    highKeys = []
-    for key in graph:
-        if len(graph[key]) >= topEdges and key not in hospital:
-            highKeys.append(key)
+for key in highKeys:
+    if key not in allPaths:
+        BFS_ShortestCuda(key)
 
-    for key in highKeys:
-        if key not in allPaths:
-            BFS_Shortest(key)
+for key in graph:
+    if key not in allPaths and key not in hospital:
+            BFS_ShortestCuda(key)
 
-    for key in graph:
-        if key not in allPaths and key not in hospital:
-                BFS_Shortest(key)
-
-
-load_graph_data()
-shortest_hospital_process()
-
-write_data_json_file("output/", "multisource_BFS.json", {"hospitals": hospital, "paths": allPaths})
+write_data_json_file("output/", "smallPP.json", {"hospitals": hospital, "paths": allPaths})
 print("Nodes Number:" + str(len(graph)))
 print("Run Finished: " + str(time.time() - start))
