@@ -97,7 +97,7 @@ def main_gui():
     tk.Label(fileFrame, text = ".json").grid(row=8,column=2)
 
     traverseButton = tk.Button(fileFrame, text = "Traverse", command=lambda:
-    main_algo(algoSelector_var.get(),int_var.get(),graphData.get(),hospitalData.get(),numOfNodes.get(),numOfHospital.get(),k.get(),savefilename.get(), root, text, recordPath_var))
+    main_algo(algoSelector_var.get(),int_var.get(),graphData.get(),hospitalData.get(),numOfNodes.get(),numOfHospital.get(),k.get(),savefilename.get(), root, text, recordPath_var.get()))
 
     traverseButton.grid(row=9,column=1)
 
